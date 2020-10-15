@@ -71,23 +71,33 @@ def bfs(graph, start, goal):
 
 
 def calculate_pin(black, white):
+    # make board
     board = chess.Board()
     board.clear()
     board.turn = chess.BLACK
 
+    # make black piece
     piece_type = PIECE_MAP[black]
     piece_color = chess.BLACK
     black_piece = chess.Piece(color=piece_color, piece_type=piece_type)
 
+    # make white piece
     piece_type = PIECE_MAP[white]
     piece_color = chess.WHITE
     white_piece = chess.Piece(color=piece_color, piece_type=piece_type)
 
+    # select random black square
     rand_black_square = random.choice(BLACK_SQUARES)
 
     board.set_piece_at(rand_black_square, black_piece)
+    move_set = {str(move)[2:] for move in board.legal_moves}
+    board.turn = chess.WHITE
 
-    moves = [move for move in board.generate_legal_moves()]
+    board.set_piece_at(rand_black_square + 1, white_piece)
+    piece_move_set = {str(move)[2:] for move in board.legal_moves}
+
+    # if one move of a white piece intersects with a legal move, save white piece keep searching
+    # go through all squares of board, try adding a white piece?
 
     # do BFS with goal of no legal moves and least number of white pieces
 
@@ -95,4 +105,4 @@ def calculate_pin(black, white):
 
 
 if __name__ == '__main__':
-    calculate_pin('pawn', 'pawn')
+    calculate_pin('knight', 'queen')
