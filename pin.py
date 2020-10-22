@@ -90,11 +90,37 @@ def calculate_pin(black, white):
     rand_black_square = random.choice(BLACK_SQUARES)
 
     board.set_piece_at(rand_black_square, black_piece)
-    move_set = {str(move)[2:] for move in board.legal_moves}
+    move_set = [str(move)[2:] for move in board.legal_moves]
+    print(move_set)
     board.turn = chess.WHITE
 
-    board.set_piece_at(rand_black_square + 1, white_piece)
-    piece_move_set = {str(move)[2:] for move in board.legal_moves}
+    # iterate over all board squares and try
+
+    # todo make special rules if white is pawn
+
+    white_positions = {}
+    covered = []
+    for letter in 'ABCDEFG':
+        for number in range(1, 9):
+            square = eval(f'chess.{letter}{number}')
+
+            if square == rand_black_square:
+                continue
+
+            board.set_piece_at(square, white_piece)
+            piece_move_set = [str(move)[2:] for move in board.legal_moves]
+
+            piece_coverage = 0
+            for move in piece_move_set:
+                if move in move_set:
+                    piece_coverage += 1
+                    white_positions[move] = square
+
+            board.remove_piece_at(square)
+
+    for square in white_positions.values():
+        # for square in squares:
+            board.set_piece_at(square, white_piece)
 
     # if one move of a white piece intersects with a legal move, save white piece keep searching
     # go through all squares of board, try adding a white piece?
@@ -105,4 +131,4 @@ def calculate_pin(black, white):
 
 
 if __name__ == '__main__':
-    calculate_pin('knight', 'queen')
+    calculate_pin('king', 'rook')
