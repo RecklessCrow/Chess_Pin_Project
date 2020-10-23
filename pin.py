@@ -1,80 +1,80 @@
+import itertools
+from time import time
 import chess
 import random
 
-PIECE_MAP = {'knight': chess.KNIGHT,
-             'bishop': chess.BISHOP,
-             'rook': chess.ROOK,
-             'king': chess.KING,
-             'queen': chess.QUEEN,
-             'pawn': chess.PAWN
-             }
+PIECE_MAP = {
+    'knight': chess.KNIGHT,
+    'bishop': chess.BISHOP,
+    'rook': chess.ROOK,
+    'king': chess.KING,
+    'queen': chess.QUEEN,
+    'pawn': chess.PAWN
+}
 
+SQUARES = []
 BLACK_SQUARES = []
 
 odd_row = True
 for letter in 'ABCDEFGH':
-    if odd_row:
-        for number in range(1, 9, 2):
-            BLACK_SQUARES.append(eval(f'chess.{letter}{number}'))
-    else:
-        for number in range(2, 9, 2):
-            BLACK_SQUARES.append(eval(f'chess.{letter}{number}'))
+
+    for number in range(1, 9):
+        SQUARES.append(eval(f'chess.{letter}{number}'))
+
+    r = range(1, 9, 2) if odd_row else range(2, 9, 2)
+
+    for number in r:
+        BLACK_SQUARES.append(eval(f'chess.{letter}{number}'))
 
     odd_row = not odd_row
 
+SQUARES.sort()
 BLACK_SQUARES.sort()
 
 
-class Graph:
-    def __init__(self, num_nodes):
-        self.nodes = {i + 1: [] for i in range(num_nodes)}
+def find_solution(board, black_square, black_piece, white_piece):
+    def black_is_pinned(white_positions):
+        board.clear()
 
-    def __str__(self):
-        return str(self.nodes)
+        # add pieces to board
+        board.set_piece_at(black_square, black_piece)
 
-    def neighbors(self, node):
-        return self.nodes[node]
+        if black_square in white_positions:
+            return False
 
-    def add_edge(self, start, end, cost):
-        self.nodes[end].append((start, cost))
+        for pos in white_positions:
+            board.set_piece_at(pos, white_piece)
 
+        board.turn = chess.BLACK
 
-def bfs(graph, start, goal):
-    # keep track of unvisited nodes, the path taken, and the cost of the path
-    open_list = deque()
-    closed_list = {}
-    visited = [goal]
-    open_list.append((goal, 0, visited))
-    path = []
-    path_cost = float('-inf')
+        if not board.legal_moves:
+            return True
 
-    while open_list:
-        current_node, current_cost, current_visited = open_list.pop()
+        for move in board.legal_moves:
+            # make black move
+            # if move is not covered in whites possible moveset return false
+            pos = str(move)[2:]
+            board.push(move)
 
-        for next_node, cost in graph.neighbors(current_node):
+            if pos not in [str(move)[2:] for move in board.legal_moves]:
+                return False
 
-            new_cost = cost ** current_cost if current_cost != 0 else cost
+            board.pop()
 
-            if next_node not in closed_list or new_cost > closed_list[next_node]:
-                closed_list[next_node] = new_cost
-                open_list.append((next_node, new_cost, current_visited + [next_node]))
+        return True
 
-            if next_node == start:
-                # todo: check for lexicographical order if costs are equal
-                if new_cost > path_cost:
-                    path = current_visited + [next_node]
-                    path_cost = new_cost
+    for i in range(len(SQUARES)):
+        for white_positions in itertools.combinations(SQUARES, i):
+            if black_is_pinned(white_positions):
+                return white_positions
 
-    path.reverse()
-
-    return path, path_cost
+    return []
 
 
 def calculate_pin(black, white):
     # make board
     board = chess.Board()
     board.clear()
-    board.turn = chess.BLACK
 
     # make black piece
     piece_type = PIECE_MAP[black]
@@ -89,46 +89,19 @@ def calculate_pin(black, white):
     # select random black square
     rand_black_square = random.choice(BLACK_SQUARES)
 
+    start = time()
+    solution = find_solution(board, rand_black_square, black_piece, white_piece)
+    end = time()
+
+    board.clear()
     board.set_piece_at(rand_black_square, black_piece)
-    move_set = [str(move)[2:] for move in board.legal_moves]
-    print(move_set)
-    board.turn = chess.WHITE
+    for square in solution:
+        board.set_piece_at(square, white_piece)
 
-    # iterate over all board squares and try
-
-    # todo make special rules if white is pawn
-
-    white_positions = {}
-    covered = []
-    for letter in 'ABCDEFG':
-        for number in range(1, 9):
-            square = eval(f'chess.{letter}{number}')
-
-            if square == rand_black_square:
-                continue
-
-            board.set_piece_at(square, white_piece)
-            piece_move_set = [str(move)[2:] for move in board.legal_moves]
-
-            piece_coverage = 0
-            for move in piece_move_set:
-                if move in move_set:
-                    piece_coverage += 1
-                    white_positions[move] = square
-
-            board.remove_piece_at(square)
-
-    for square in white_positions.values():
-        # for square in squares:
-            board.set_piece_at(square, white_piece)
-
-    # if one move of a white piece intersects with a legal move, save white piece keep searching
-    # go through all squares of board, try adding a white piece?
-
-    # do BFS with goal of no legal moves and least number of white pieces
-
-    print(board)
+    print()
+    print(board, '\n')
+    print(f'Took {end - start:.2f} seconds.')
 
 
 if __name__ == '__main__':
-    calculate_pin('king', 'rook')
+    calculate_pin('queen', 'knight')
