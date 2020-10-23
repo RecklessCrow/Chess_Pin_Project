@@ -1,5 +1,6 @@
-import pin
 from termcolor import colored
+
+import pin
 
 PIECES = ['pawn', 'rook', 'knight', 'bishop', 'king', 'queen']
 SELECTIONS = {1: 'Start a new game',
@@ -9,6 +10,11 @@ INVALID_PIECE = ' is an invalid piece type.\n'
 
 
 def start_new_pin_calc():
+    """
+    Interact with user to generate a new game
+    :return:
+    """
+
     black_type = input("Enter the black piece type: ")
     black_type = black_type.lower()
 
@@ -21,12 +27,17 @@ def start_new_pin_calc():
 
     while white_type not in PIECES:
         print(colored(white_type + INVALID_PIECE, 'red'))
-        white_type = input("Enter the black piece type: ")
+        white_type = input("Enter the white piece type: ")
 
-    pin.calculate_pin(black_type, white_type)
+    pin.print_board(black_type, white_type)
 
 
 def main():
+    """
+    Main function
+    :return:
+    """
+
     while True:
         selection = input(f"\nSelections:\n"
                           f"\t1) {SELECTIONS[1]}\n"
