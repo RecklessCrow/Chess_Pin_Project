@@ -34,7 +34,7 @@ SQUARES.sort()
 BLACK_SQUARES.sort()
 
 
-def find_solution(board, black_square, black_piece, white_piece):
+def find_solution(black_square, black_piece, white_piece):
     """
     Find the minimum number of white pieces required to pin the black piece
     :param board:
@@ -43,6 +43,9 @@ def find_solution(board, black_square, black_piece, white_piece):
     :param white_piece:
     :return:
     """
+
+    board = chess.Board()
+    board.clear()
 
     def black_is_pinned(white_positions):
         """
@@ -59,6 +62,8 @@ def find_solution(board, black_square, black_piece, white_piece):
 
         # add pieces to board
         board.set_piece_at(black_square, black_piece)
+        black_moves = list(board.legal_moves)
+
         for pos in white_positions:
             board.set_piece_at(pos, white_piece)
 
@@ -66,7 +71,7 @@ def find_solution(board, black_square, black_piece, white_piece):
         if not board.legal_moves:
             return True
 
-        for move in board.legal_moves:
+        for move in black_moves:
             # make black move
             board.push(move)
 
@@ -79,11 +84,30 @@ def find_solution(board, black_square, black_piece, white_piece):
 
         return True
 
+    # get only squares where the pieces are going to intersect with the resulting black move
+    board.clear()
+    board.turn = chess.BLACK
+    board.set_piece_at(black_square, black_piece)
+    black_moves = [eval(f'chess.{str(move)[2:].upper()}') for move in board.legal_moves if len(str(move)) <= 4]
+    board.remove_piece_at(black_square)
+    board.turn = chess.WHITE
+    possible_white_squares = set(black_moves)
+    for square in SQUARES:
+        if square == black_square:
+            continue
+        board.set_piece_at(square, white_piece)
+        for move in board.legal_moves:
+            if len(str(move)) > 4:
+                continue
+            if eval(f'chess.{str(move)[2:].upper()}') in black_moves:
+                possible_white_squares.add(square)
+                break
+
     # Iterate over all possible combinations of white positions starting with 1 piece, then 2, so forth and so on
     # An issue with this is that it takes a while if the required number of pieces is greater than 5
     # possible search space is 2 ^ 64 so it would take years to exhaust
-    for i in range(len(SQUARES)):
-        for white_positions in itertools.combinations(SQUARES, i):
+    for i in range(len(possible_white_squares)):
+        for white_positions in itertools.combinations(possible_white_squares, i):
             if black_is_pinned(white_positions):
                 return white_positions
 
@@ -98,29 +122,34 @@ def print_board(black, white):
     :return:
     """
 
-    # make board
-    board = chess.Board()
-    board.clear()
-
     # make black piece
-    piece_type = PIECE_MAP[black]
-    piece_color = chess.BLACK
-    black_piece = chess.Piece(color=piece_color, piece_type=piece_type)
-
+    black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP[black])
     # make white piece
-    piece_type = PIECE_MAP[white]
-    piece_color = chess.WHITE
-    white_piece = chess.Piece(color=piece_color, piece_type=piece_type)
+    white_piece = chess.Piece(color=chess.WHITE, piece_type=PIECE_MAP[white])
 
     # select random black square
     rand_black_square = random.choice(BLACK_SQUARES)
 
     # find and time the solution
     start = time()
-    solution = find_solution(board, rand_black_square, black_piece, white_piece)
+    if black == 'queen':
+        # do calc for bishop and rook then add the sets together
+        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['bishop'])
+        solution = find_solution(rand_black_square, black_piece, white_piece)
+
+        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['rook'])
+        solution += find_solution(rand_black_square, black_piece, white_piece)
+
+        solution = set(solution)
+
+        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['queen'])
+
+    else:
+        solution = find_solution(rand_black_square, black_piece, white_piece)
     end = time()
 
     # place pieces on board
+    board = chess.Board()
     board.clear()
     board.set_piece_at(rand_black_square, black_piece)
 
@@ -141,4 +170,7 @@ def print_board(black, white):
 
 
 if __name__ == '__main__':
-    print_board('knight', 'knight')
+    for p1 in PIECE_MAP:
+        print('pawn', p1)
+        print_board('pawn', p1)
+        print()
