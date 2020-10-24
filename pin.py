@@ -121,12 +121,8 @@ def find_solution(black_square, black_piece, white_piece):
     # Iterate over all possible combinations of white positions starting with 1 piece, then 2, so forth and so on
     # An issue with this is that it takes a while if the required number of pieces is greater than 5
     # Largest possible search space is 2 ^ 64 so it would take ages to exhaust
-    print(black_moves)
-    print(possible_white_squares)
     for i in range(len(possible_white_squares) + 1):
-        print(i)
         for white_positions in itertools.combinations(possible_white_squares, i):
-            print(white_positions)
             if black_is_pinned(white_positions):
                 return white_positions
 
@@ -185,4 +181,4 @@ def print_board(black, white):
 
 
 if __name__ == '__main__':
-    print_board('pawn', 'pawn')
+    print_board('knight', 'knight')
