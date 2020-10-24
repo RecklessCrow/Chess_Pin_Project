@@ -93,10 +93,10 @@ def find_solution(black_square, black_piece, white_piece):
 
     # Take into account the case where the black piece is a pawn and is one square away from being able to promote
     if black_piece.piece_type == chess.PAWN and chess.A2 <= black_square <= chess.H2:
-        print('here')
         for letter in 'ABCDEFGH':
             if black_square == eval(f'chess.{letter}2'):
                 black_moves = [eval(f'chess.{letter}1')]
+                break
 
     board.clear()
 
@@ -121,8 +121,12 @@ def find_solution(black_square, black_piece, white_piece):
     # Iterate over all possible combinations of white positions starting with 1 piece, then 2, so forth and so on
     # An issue with this is that it takes a while if the required number of pieces is greater than 5
     # Largest possible search space is 2 ^ 64 so it would take ages to exhaust
-    for i in range(len(possible_white_squares)):
+    print(black_moves)
+    print(possible_white_squares)
+    for i in range(len(possible_white_squares) + 1):
+        print(i)
         for white_positions in itertools.combinations(possible_white_squares, i):
+            print(white_positions)
             if black_is_pinned(white_positions):
                 return white_positions
 
@@ -181,4 +185,4 @@ def print_board(black, white):
 
 
 if __name__ == '__main__':
-    print_board('pawn', 'knight')
+    print_board('pawn', 'pawn')
