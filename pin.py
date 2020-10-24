@@ -86,12 +86,23 @@ def find_solution(black_square, black_piece, white_piece):
 
     # get only squares where the pieces are going to intersect with the resulting black move
     board.clear()
+
     board.turn = chess.BLACK
     board.set_piece_at(black_square, black_piece)
     black_moves = [eval(f'chess.{str(move)[2:].upper()}') for move in board.legal_moves if len(str(move)) <= 4]
-    board.remove_piece_at(black_square)
+
+    # Take into account the case where the black piece is a pawn and is one square away from being able to promote
+    if black_piece.piece_type == chess.PAWN and chess.A2 <= black_square <= chess.H2:
+        print('here')
+        for letter in 'ABCDEFGH':
+            if black_square == eval(f'chess.{letter}2'):
+                black_moves = [eval(f'chess.{letter}1')]
+
+    board.clear()
+
     board.turn = chess.WHITE
     possible_white_squares = set(black_moves)
+
     for square in SQUARES:
         if square == black_square:
             continue
@@ -102,16 +113,22 @@ def find_solution(black_square, black_piece, white_piece):
             if eval(f'chess.{str(move)[2:].upper()}') in black_moves:
                 possible_white_squares.add(square)
                 break
+        board.clear()
+
+    if not black_moves:
+        return []
 
     # Iterate over all possible combinations of white positions starting with 1 piece, then 2, so forth and so on
     # An issue with this is that it takes a while if the required number of pieces is greater than 5
-    # possible search space is 2 ^ 64 so it would take years to exhaust
+    # Largest possible search space is 2 ^ 64 so it would take ages to exhaust
     for i in range(len(possible_white_squares)):
         for white_positions in itertools.combinations(possible_white_squares, i):
             if black_is_pinned(white_positions):
                 return white_positions
 
-    return []
+    board.clear()
+    board.set_piece_at(black_square, black_piece)
+    raise Exception(f"No solution possible for this board.\n{board}")
 
 
 def print_board(black, white):
@@ -154,23 +171,14 @@ def print_board(black, white):
     board.set_piece_at(rand_black_square, black_piece)
 
     # print out the solution
-    if solution:
-        for square in solution:
-            board.set_piece_at(square, white_piece)
+    for square in solution:
+        board.set_piece_at(square, white_piece)
 
-        print()
-        print(board, '\n')
-        print(f'Minimum number of white {white}s required: {len(solution)}')
-        print(f'Took {end - start:.2f} seconds.')
-
-    # Realistically impossible to get here
-    else:
-        print(board, '\n')
-        print('No solution found.')
+    print()
+    print(board, '\n')
+    print(f'Minimum number of white {white}s required: {len(solution)}')
+    print(f'Took {end - start:.2f} seconds to solve.')
 
 
 if __name__ == '__main__':
-    for p1 in PIECE_MAP:
-        print('pawn', p1)
-        print_board('pawn', p1)
-        print()
+    print_board('pawn', 'knight')
