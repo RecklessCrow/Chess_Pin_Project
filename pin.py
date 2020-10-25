@@ -37,10 +37,10 @@ SQUARES.sort()
 BLACK_SQUARES.sort()
 
 
-def find_solution(black_square, black_piece, white_piece):
+def find_solution(black_square, black_piece, white_piece, carry=[]):
     """
     Find the minimum number of white pieces required to pin the black piece
-    :param board:
+    :param carry:
     :param black_square:
     :param black_piece:
     :param white_piece:
@@ -60,6 +60,7 @@ def find_solution(black_square, black_piece, white_piece):
         if black_square in white_positions:
             return False
 
+        board = chess.Board()
         board.clear()
         board.turn = chess.BLACK
 
@@ -113,7 +114,12 @@ def find_solution(black_square, black_piece, white_piece):
         for move in board.legal_moves:
             if len(str(move)) > 4:
                 continue
-            if eval(f'chess.{str(move)[2:].upper()}') in black_moves:
+
+            move = eval(f'chess.{str(move)[2:].upper()}')
+
+            if move in carry:
+                continue
+            if move in black_moves:
                 possible_white_squares.add(square)
                 break
         board.clear()
@@ -125,9 +131,10 @@ def find_solution(black_square, black_piece, white_piece):
     # An issue with this is that it takes a while if the required number of pieces is greater than 5
     # Largest possible search space is 2 ^ 64 so it would take ages to exhaust
     for i in range(1, len(possible_white_squares) + 1):
+        print(i)
         for white_positions in itertools.combinations(possible_white_squares, i):
-            if black_is_pinned(white_positions):
-                return white_positions
+            if black_is_pinned(list(white_positions) + carry):
+                return list(white_positions)
 
     board.clear()
     board.set_piece_at(black_square, black_piece)
@@ -152,23 +159,7 @@ def print_board(black, white):
 
     # find and time the solution
     start = time()
-
-    if black != 'queen':
-        solution = find_solution(rand_black_square, black_piece, white_piece)
-
-    else:
-        # do calc for bishop and rook then add the sets together, this reduces the time complexity of the queen case
-        # dramatically
-        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['rook'])
-        solution = find_solution(rand_black_square, black_piece, white_piece)
-
-        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['bishop'])
-        solution += find_solution(rand_black_square, black_piece, white_piece)
-
-        solution = set(solution)
-
-        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['queen'])
-
+    solution = find_solution(rand_black_square, black_piece, white_piece)
     end = time()
 
     # place pieces on board
@@ -203,4 +194,4 @@ if __name__ == '__main__':
     # print_board('knight', 'knight')
     # print_board('rook', 'bishop')
     # print_board('bishop', 'bishop')
-    print_board('queen', 'bishop')
+    print_board('queen', 'queen')
