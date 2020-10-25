@@ -124,7 +124,7 @@ def find_solution(black_square, black_piece, white_piece):
     # Iterate over all possible combinations of white positions starting with 1 piece, then 2, so forth and so on
     # An issue with this is that it takes a while if the required number of pieces is greater than 5
     # Largest possible search space is 2 ^ 64 so it would take ages to exhaust
-    for i in range(len(possible_white_squares) + 1):
+    for i in range(1, len(possible_white_squares) + 1):
         for white_positions in itertools.combinations(possible_white_squares, i):
             if black_is_pinned(white_positions):
                 return white_positions
@@ -159,10 +159,10 @@ def print_board(black, white):
     else:
         # do calc for bishop and rook then add the sets together, this reduces the time complexity of the queen case
         # dramatically
-        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['bishop'])
+        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['rook'])
         solution = find_solution(rand_black_square, black_piece, white_piece)
 
-        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['rook'])
+        black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['bishop'])
         solution += find_solution(rand_black_square, black_piece, white_piece)
 
         solution = set(solution)
@@ -180,10 +180,18 @@ def print_board(black, white):
     for square in solution:
         board.set_piece_at(square, white_piece)
 
+    run_time = end - start
+    if run_time < 60:
+        run_time = f'{end - start:.2f} seconds'
+    elif run_time < 60 * 60:
+        run_time = f'{int(run_time // 60)} minutes and {run_time % 60:.2f} seconds'
+    else:
+        run_time = f'lmao'
+
     print()
     print(board, '\n')
     print(f'Minimum number of white {white}s required: {len(solution)}')
-    print(f'Took {end - start:.2f} seconds to solve.\n')
+    print(f'Took {run_time} to solve.\n')
 
     # Draw the board
     img_path = os.path.join('images', 'chess_board.svg')
@@ -192,4 +200,7 @@ def print_board(black, white):
 
 
 if __name__ == '__main__':
-    print_board('knight', 'knight')
+    # print_board('knight', 'knight')
+    # print_board('rook', 'bishop')
+    # print_board('bishop', 'bishop')
+    print_board('queen', 'bishop')
