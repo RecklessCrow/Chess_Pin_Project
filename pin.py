@@ -3,6 +3,7 @@ import random
 from time import time
 
 import chess
+import chess.svg
 
 PIECE_MAP = {
     'knight': chess.KNIGHT,
@@ -149,8 +150,13 @@ def print_board(black, white):
 
     # find and time the solution
     start = time()
-    if black == 'queen':
-        # do calc for bishop and rook then add the sets together
+
+    if black != 'queen':
+        solution = find_solution(rand_black_square, black_piece, white_piece)
+
+    else:
+        # do calc for bishop and rook then add the sets together, this reduces the time complexity of the queen case
+        # dramatically
         black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['bishop'])
         solution = find_solution(rand_black_square, black_piece, white_piece)
 
@@ -161,8 +167,6 @@ def print_board(black, white):
 
         black_piece = chess.Piece(color=chess.BLACK, piece_type=PIECE_MAP['queen'])
 
-    else:
-        solution = find_solution(rand_black_square, black_piece, white_piece)
     end = time()
 
     # place pieces on board
@@ -178,6 +182,9 @@ def print_board(black, white):
     print(board, '\n')
     print(f'Minimum number of white {white}s required: {len(solution)}')
     print(f'Took {end - start:.2f} seconds to solve.')
+
+    # chess.svg.board(board)
+    # print(chess.svg.board(board))
 
 
 if __name__ == '__main__':
