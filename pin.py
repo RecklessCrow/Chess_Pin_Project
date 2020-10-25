@@ -37,7 +37,7 @@ SQUARES.sort()
 BLACK_SQUARES.sort()
 
 
-def find_solution(black_square, black_piece, white_piece, carry=[]):
+def find_solution(black_square, black_piece, white_piece):
     """
     Find the minimum number of white pieces required to pin the black piece
     :param carry:
@@ -103,25 +103,25 @@ def find_solution(black_square, black_piece, white_piece, carry=[]):
                 break
 
     board.clear()
-
     board.turn = chess.WHITE
     possible_white_squares = set(black_moves)
 
     for square in SQUARES:
         if square == black_square:
             continue
+
         board.set_piece_at(square, white_piece)
+
         for move in board.legal_moves:
             if len(str(move)) > 4:
                 continue
 
             move = eval(f'chess.{str(move)[2:].upper()}')
 
-            if move in carry:
-                continue
             if move in black_moves:
                 possible_white_squares.add(square)
                 break
+
         board.clear()
 
     if not black_moves:
@@ -131,10 +131,10 @@ def find_solution(black_square, black_piece, white_piece, carry=[]):
     # An issue with this is that it takes a while if the required number of pieces is greater than 5
     # Largest possible search space is 2 ^ 64 so it would take ages to exhaust
     for i in range(1, len(possible_white_squares) + 1):
-        print(i)
+
         for white_positions in itertools.combinations(possible_white_squares, i):
-            if black_is_pinned(list(white_positions) + carry):
-                return list(white_positions)
+            if black_is_pinned(white_positions):
+                return white_positions
 
     board.clear()
     board.set_piece_at(black_square, black_piece)
@@ -192,6 +192,7 @@ def print_board(black, white):
 
 if __name__ == '__main__':
     # print_board('knight', 'knight')
-    # print_board('rook', 'bishop')
+    print_board('king', 'king')
+    # print_board('rook', 'rook')
     # print_board('bishop', 'bishop')
-    print_board('queen', 'queen')
+    # print_board('queen', 'queen')
