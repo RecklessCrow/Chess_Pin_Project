@@ -183,7 +183,7 @@ def print_board(black, white):
     print()
     print(board, '\n')
     print(f'Minimum number of white {white}s required: {len(solution)}')
-    print(f'Took {end - start:.2f} seconds to solve.')
+    print(f'Took {end - start:.2f} seconds to solve.\n')
 
     # Draw the board
     img_path = os.path.join('images', 'chess_board.svg')
