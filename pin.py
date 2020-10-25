@@ -1,9 +1,11 @@
 import itertools
+import os
 import random
 from time import time
 
 import chess
 import chess.svg
+import svgwrite
 
 PIECE_MAP = {
     'knight': chess.KNIGHT,
@@ -183,8 +185,10 @@ def print_board(black, white):
     print(f'Minimum number of white {white}s required: {len(solution)}')
     print(f'Took {end - start:.2f} seconds to solve.')
 
-    # chess.svg.board(board)
-    # print(chess.svg.board(board))
+    # Draw the board
+    img_path = os.path.join('images', 'chess_board.svg')
+    with open(img_path, 'w+') as f:
+        f.write(chess.svg.board(board))
 
 
 if __name__ == '__main__':
