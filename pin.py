@@ -5,7 +5,6 @@ from time import time
 
 import chess
 import chess.svg
-import svgwrite
 
 PIECE_MAP = {
     'knight': chess.KNIGHT,
@@ -175,7 +174,8 @@ def print_board(black, white):
     if run_time < 60:
         run_time = f'{end - start:.2f} seconds'
     elif run_time < 60 * 60:
-        run_time = f'{int(run_time // 60)} minutes and {run_time % 60:.2f} seconds'
+        m = int(run_time // 60)
+        run_time = f'{m} {"minutes" if m > 1 else "minute"} and {run_time % 60:.2f} seconds'
     else:
         run_time = f'lmao'
 
@@ -192,7 +192,8 @@ def print_board(black, white):
 
 if __name__ == '__main__':
     # print_board('knight', 'knight')
-    print_board('king', 'king')
+    # print_board('king', 'king')
     # print_board('rook', 'rook')
     # print_board('bishop', 'bishop')
     # print_board('queen', 'queen')
+    pass
